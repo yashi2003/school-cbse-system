@@ -1,11 +1,17 @@
 package com.school.system
 
+import com.school.system.repository.StudentRepository
+import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
 
 @SpringBootApplication
-class SchoolCbseSystemApplication
+class SchoolSystemApplication
 
 fun main(args: Array<String>) {
-	runApplication<SchoolCbseSystemApplication>(*args)
-}
+	runApplication<SchoolSystemApplication>(*args)
+	}
+	// This runs when app starts to verify MongoDB connection
+
+
