@@ -10,6 +10,6 @@ class WebClientConfig {
 
     @Bean
     fun webClient(): WebClient = WebClient.builder()
-        .baseUrl("http://localhost:8081") // CBSE Mock API URL
+        .baseUrl("http://localhost:8080") // CBSE Mock API URL
         .build()
 }

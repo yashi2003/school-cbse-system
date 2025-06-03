@@ -27,6 +27,7 @@ class StudentService(
             }
     }
 
+
     fun getStudentByAadhaar(aadhaar: String): Mono<Student> = studentRepository.findById(aadhaar)
 }
 
