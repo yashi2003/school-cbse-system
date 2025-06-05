@@ -4,6 +4,7 @@ import com.school.system.model.RetryEvent
 import com.school.system.model.enums.RetryStatus
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
 
@@ -24,4 +25,7 @@ interface RetryEventRepository : ReactiveMongoRepository<RetryEvent, UUID> {
         status: RetryStatus,
         time: LocalDateTime
     ): Flux<RetryEvent>
+
+    fun findByAadhaarAndTaskType(aadhaar: String, taskType: String): Mono<RetryEvent?>
 }
+

@@ -4,69 +4,62 @@ import com.school.system.dto.StudentOnboardingEvent
 import com.school.system.model.RetryEvent
 import com.school.system.model.enums.RetryStatus
 import com.school.system.repository.RetryEventRepository
-import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
-@Component
+/**
+ * Kafka consumer that listens to student onboarding events and saves a RetryEvent
+ * based on the outcome determined from Aadhaar logic.
+ */
+@Component  // Marks this class as a Spring-managed component eligible for Kafka event handling.
 class StudentOnboardingConsumer(
     private val retryEventRepository: RetryEventRepository
 ) {
     private val logger = LoggerFactory.getLogger(StudentOnboardingConsumer::class.java)
 
+    /**
+     * Listens to the Kafka topic "student-onboarding" and handles incoming StudentOnboardingEvent messages.
+     * Deserialization and listener container setup is handled via kafkaListenerFactory.
+     */
     @KafkaListener(
         topics = ["student-onboarding"],
         groupId = "school-service",
         containerFactory = "kafkaListenerFactory"
     )
     fun listen(event: StudentOnboardingEvent) {
-        try {
-            logger.info("Consumed Kafka event for student rollNo='${event.rollNo}', Aadhaar ending with '${event.aadhaar.last()}'")
+        retryEventRepository.findByAadhaarAndTaskType(event.aadhaar, "CBSE_ONBOARDING")
+            .switchIfEmpty(Mono.defer {
+                logger.info("No existing RetryEvent found for Aadhaar='${event.aadhaar}'. Proceeding to process.")
+                processEvent(event)
+                Mono.empty()
+            })
+            .subscribe {
+                logger.info("Duplicate event for Aadhaar='${event.aadhaar}'. Skipping.")
+            }
+    }
 
-            val (httpStatus, responseMessage) = determineResponse(event.aadhaar.last())
+    private fun processEvent(event: StudentOnboardingEvent) {
+        val aadhaarLastDigit = event.aadhaar.last()
 
-            val retryStatus = mapHttpStatusToRetryStatus(httpStatus)
-
-            val retryEvent = buildRetryEvent(event, httpStatus, responseMessage, retryStatus)
-
-            retryEventRepository.save(retryEvent)
-                .doOnSuccess {
-                    logger.info("RetryEvent saved successfully with status='$retryStatus' and HTTP status=${httpStatus.value()}")
-                }
-                .doOnError { error ->
-                    logger.error("Failed to save RetryEvent for student rollNo='${event.rollNo}':", error)
-                }
-                .subscribe()
-        } catch (ex: Exception) {
-            logger.error("Error processing Kafka event for student rollNo='${event.rollNo}':", ex)
+        val (httpStatus, responseMessage) = when (aadhaarLastDigit) {
+            '0' -> HttpStatus.OK to "Student enrolled successfully"
+            '1' -> HttpStatus.CONFLICT to "Student already enrolled"
+            '2' -> HttpStatus.INTERNAL_SERVER_ERROR to "Internal error"
+            else -> HttpStatus.BAD_REQUEST to "Unhandled Aadhaar pattern"
         }
-    }
 
-    private fun determineResponse(aadhaarLastDigit: Char): Pair<HttpStatus, String> = when (aadhaarLastDigit) {
-        '0' -> HttpStatus.OK to "Student enrolled successfully"
-        '1' -> HttpStatus.CONFLICT to "Student already enrolled"
-        '2' -> HttpStatus.INTERNAL_SERVER_ERROR to "Internal server error"
-        else -> HttpStatus.BAD_REQUEST to "Unhandled Aadhaar pattern"
-    }
+        val retryStatus = when (httpStatus) {
+            HttpStatus.OK -> RetryStatus.CLOSED
+            HttpStatus.CONFLICT -> RetryStatus.FAILED
+            HttpStatus.INTERNAL_SERVER_ERROR -> RetryStatus.OPEN
+            else -> RetryStatus.FAILED
+        }
 
-    private fun mapHttpStatusToRetryStatus(httpStatus: HttpStatus): RetryStatus = when (httpStatus) {
-        HttpStatus.OK -> RetryStatus.CLOSED
-        HttpStatus.CONFLICT -> RetryStatus.FAILED
-        HttpStatus.INTERNAL_SERVER_ERROR -> RetryStatus.OPEN
-        else -> RetryStatus.FAILED
-    }
-
-    private fun buildRetryEvent(
-        event: StudentOnboardingEvent,
-        httpStatus: HttpStatus,
-        responseMessage: String,
-        retryStatus: RetryStatus
-    ): RetryEvent {
-        val now = LocalDateTime.now()
-
-        return RetryEvent(
+        val retryEvent = RetryEvent(
             aadhar = event.aadhaar,
             taskType = "CBSE_ONBOARDING",
             requestMetadata = mapOf(
@@ -81,11 +74,15 @@ class StudentOnboardingConsumer(
                 "status" to httpStatus.value(),
                 "message" to responseMessage
             ),
-            createdDate = now,
-            lastRunDate = now,
-            nextRunTime = now.plusMinutes(5),
+            createdDate = LocalDateTime.now(),
+            lastRunDate = LocalDateTime.now(),
+            nextRunTime = LocalDateTime.now().plusMinutes(1),
             version = 0,
             status = retryStatus
         )
+
+        retryEventRepository.save(retryEvent).subscribe {
+            logger.info("RetryEvent saved successfully with status='$retryStatus' and HTTP status=${httpStatus.value()}")
+        }
     }
 }
