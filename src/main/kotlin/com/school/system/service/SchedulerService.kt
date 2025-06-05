@@ -33,7 +33,7 @@ class SchedulerService(
 
         retryEventRepository.findByStatusAndNextRunTimeBefore(RetryStatus.OPEN, now)
             .doOnNext { event ->
-                logger.info("Retrying student: ${event.studentRollNo}, version: ${event.version}")
+                logger.info("Retrying student: ${event.aadhar}, version: ${event.version}")
             }
             .flatMap { event ->
                 retryConfigRepository.findByTaskType(event.taskType)
@@ -46,7 +46,7 @@ class SchedulerService(
             }
             .subscribe(
                 { updated ->
-                    logger.info("Successfully updated retry event for student: ${updated.studentRollNo}, status: ${updated.status}")
+                    logger.info("Successfully updated retry event for student: ${updated.aadhar}, status: ${updated.status}")
                 },
                 { error ->
                     logger.error("Error occurred during retry processing: ", error)
@@ -64,7 +64,7 @@ class SchedulerService(
      */
     private fun processRetry(event: RetryEvent, maxRetry: Int, retryAfterMins: Int): Mono<RetryEvent> {
         if (event.version >= maxRetry) {
-            logger.warn("Max retries exceeded for student: ${event.studentRollNo}")
+            logger.warn("Max retries exceeded for student: ${event.aadhar}")
             return Mono.empty()
         }
 
@@ -87,7 +87,7 @@ class SchedulerService(
         logger.info(
             """
             Updating retry event:
-            Student: ${event.studentRollNo}
+            Student: ${event.aadhar}
             HTTP: ${httpStatus.value()} - $message
             New Status: $newStatus
             Retry Count: ${event.version + 1}/$maxRetry

@@ -15,19 +15,7 @@ data class RetryConfig(
      */
     @Id
     val id: String? = null,
-
-    /**
-     * Logical identifier for the task type, e.g., "CBSE_ONBOARDING".
-     */
     val taskType: String,
-
-    /**
-     * Maximum number of retry attempts allowed.
-     */
     val maxRetryCount: Int,
-
-    /**
-     * Interval (in minutes) to wait between retries.
-     */
     val retryAfterInMins: Int
 )

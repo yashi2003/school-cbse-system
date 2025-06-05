@@ -67,7 +67,7 @@ class StudentOnboardingConsumer(
         val now = LocalDateTime.now()
 
         return RetryEvent(
-            studentRollNo = event.rollNo,
+            aadhar = event.aadhaar,
             taskType = "CBSE_ONBOARDING",
             requestMetadata = mapOf(
                 "aadhaar" to event.aadhaar,
