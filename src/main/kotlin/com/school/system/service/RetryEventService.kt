@@ -8,27 +8,36 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
-import java.util.*
 
+/**
+ * Service to process student onboarding events and persist retry metadata.
+ */
 @Service
 class RetryEventService(
     private val webClient: WebClient,
     private val retryEventRepository: RetryEventRepository
 ) {
 
+    /**
+     * Processes a StudentOnboardingEvent by posting it to the CBSE onboarding endpoint,
+     * and records a RetryEvent based on the response status.
+     *
+     * @param event The incoming student onboarding event.
+     * @return A Mono that completes after saving the retry event.
+     */
     fun processStudentOnboarding(event: StudentOnboardingEvent): Mono<Void> {
-        val requestBody = mapOf(
+        val requestPayload = mapOf(
             "aadhaar" to event.aadhaar,
             "rollNo" to event.rollNo,
             "name" to event.name,
             "studentClass" to event.studentClass,
             "school" to event.school,
-            "dob" to event.dob.toString() // Ensure it's ISO 8601 "yyyy-MM-dd"
+            "dob" to event.dob.toString() // ISO 8601: yyyy-MM-dd
         )
 
         return webClient.post()
             .uri("/enroll")
-            .bodyValue(requestBody)
+            .bodyValue(requestPayload)
             .retrieve()
             .toBodilessEntity()
             .map { response ->
@@ -40,7 +49,7 @@ class RetryEventService(
 
                 RetryEvent(
                     studentRollNo = event.rollNo,
-                    requestMetadata = requestBody,
+                    requestMetadata = requestPayload,
                     responseMetadata = mapOf("statusCode" to response.statusCode.value()),
                     createdDate = LocalDateTime.now(),
                     lastRunDate = LocalDateTime.now(),
@@ -52,5 +61,4 @@ class RetryEventService(
             .flatMap { retryEventRepository.save(it) }
             .then()
     }
-
 }
