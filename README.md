@@ -78,13 +78,18 @@ This project is a reactive backend system that collects student data, stores it 
 - ⚛️ **Project Reactor (Mono/Flux)** – Reactive programming
 - 🧑‍💻 **Kotlin** – Main programming language
 
-## 📬 Kafka Integration
+### 🧪 Event Simulation
 
-- Topic: `student-onboarding`
-- Message: `StudentOnboardingEvent`
-- Uses Spring Kafka’s `KafkaTemplate` to send messages.
+This section demonstrates how different Aadhaar numbers simulate varied CBSE API responses to test the retry logic and status handling.
 
----
+| 🔢 Request No. | 🧑 Name                              | 📝 Purpose                                                                                   |
+|----------------|--------------------------------------|----------------------------------------------------------------------------------------------|
+| 1              | **Student Onboarding - OK**          | Sends an event with Aadhaar ending in `0` → Simulates success → Returns **HTTP 200** → Retry status: `CLOSED` |
+| 2              | **Student Onboarding - Conflict**    | Sends an event with Aadhaar ending in `1` → Simulates **"Student Already Enrolled"** → Returns **HTTP 409** → Retry status: `FAILED` |
+| 3              | **Student Onboarding - Error**       | Sends an event with Aadhaar ending in `2` → Simulates **Server Error** → Returns **HTTP 500** → Retry status: `OPEN` |
+
+> 💡 These simulations help validate business logic, error handling, and retry mechanisms under controlled conditions.
+
 
 
 ```mermaid
