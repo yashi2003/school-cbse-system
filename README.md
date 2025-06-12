@@ -82,7 +82,7 @@ This project is a reactive backend system that collects student data, stores it 
 
 This section demonstrates how different Aadhaar numbers simulate varied CBSE API responses to test the retry logic and status handling.
 
-| 🔢 Request No. | 🧑 Name                              | 📝 Purpose                                                                                   |
+|  Request No.   |    Name                              |    Purpose                                                                                   |
 |----------------|--------------------------------------|----------------------------------------------------------------------------------------------|
 | 1              | **Student Onboarding - OK**          | Sends an event with Aadhaar ending in `0` → Simulates success → Returns **HTTP 200** → Retry status: `CLOSED` |
 | 2              | **Student Onboarding - Conflict**    | Sends an event with Aadhaar ending in `1` → Simulates **"Student Already Enrolled"** → Returns **HTTP 409** → Retry status: `FAILED` |
