@@ -12,13 +12,12 @@ import java.util.*
  */
 @Document(collection = "retry_events")
 data class RetryEvent(
-
     /**
      * Unique identifier for this retry event. Defaults to a randomly generated UUID.
      */
     @Id
     val retryId: UUID = UUID.randomUUID(),
-    val aadhar: String,
+    val aadhaar: String,
     val taskType: String = "CBSE_ONBOARDING",
     val requestMetadata: Map<String, Any>,
     var responseMetadata: Map<String, Any>? = null,

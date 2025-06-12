@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "aa56a035-ea02-4c25-8d1b-c304137adc8d",
+		"name": "school-cbse-requests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42888439"
+	},
+	"item": [
+		{
+			"name": "CLOSED",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"aadhaar\": \"9999888870\",\r\n    \"rollNo\": \"1021\",\r\n    \"name\": \"Ravi\",\r\n    \"studentClass\": \"10\",\r\n    \"dob\": \"2010-06-15\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/students",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"students"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Conflict - Already Enrolled",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"aadhaar\": \"8888777761\",\r\n    \"rollNo\": \"1022\",\r\n    \"name\": \"Sneha Sharma\",\r\n    \"studentClass\": \"10\",\r\n    \"dob\": \"2010-11-25\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/students",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"students"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Internal Error - Retry",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"aadhaar\": \"7777666652\",\r\n    \"rollNo\": \"1023\",\r\n    \"name\": \"Aman\",\r\n    \"studentClass\": \"10\",\r\n    \"dob\": \"2010-04-10\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/students",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"students"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -30,6 +30,8 @@ class StudentOnboardingConsumer(
         groupId = "school-service",
         containerFactory = "kafkaListenerFactory"
     )
+
+    //idempotency check
     fun listen(event: StudentOnboardingEvent) {
         retryEventRepository.findByAadhaarAndTaskType(event.aadhaar, "CBSE_ONBOARDING")
             .switchIfEmpty(Mono.defer {
@@ -60,7 +62,7 @@ class StudentOnboardingConsumer(
         }
 
         val retryEvent = RetryEvent(
-            aadhar = event.aadhaar,
+            aadhaar = event.aadhaar,
             taskType = "CBSE_ONBOARDING",
             requestMetadata = mapOf(
                 "aadhaar" to event.aadhaar,

@@ -26,18 +26,4 @@ class StudentController(
                 logger.error("Failed to create student with Aadhaar: ${student.aadhaar}", error)
             }
     }
-
-//    @GetMapping("/{aadhaar}")
-//    fun getStudent(@PathVariable aadhaar: String): Mono<ResponseEntity<Student>> {
-//        logger.info("Received request to fetch student with Aadhaar: $aadhaar")
-//        return studentService.getStudentByAadhaar(aadhaar)
-//            .map { student ->
-//                logger.info("Student found with Aadhaar: $aadhaar")
-//                ResponseEntity.ok(student)
-//            }
-//            .defaultIfEmpty(ResponseEntity.notFound().build())
-//            .doOnError { error ->
-//                logger.error("Error fetching student with Aadhaar: $aadhaar", error)
-//            }
-//    }
 }
